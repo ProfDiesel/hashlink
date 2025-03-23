@@ -35,12 +35,16 @@ HL_API int hl_socket_recv( hl_socket *s, vbyte *buf, int pos, int len );
 HL_API void hl_sys_sleep( double t );
 HL_API int hl_sys_getpid();
 
+HL_API int hl_atomic_load32(int *a);
+HL_API int hl_atomic_store32(int *a, int value);
+
 HL_API int hl_closure_stack_capture;
 
 static hl_socket *debug_socket = NULL;
 static hl_socket *client_socket = NULL;
-static bool debugger_connected = false;
-static bool debugger_stopped = false;
+
+static int debugger_connected = false;
+static int debugger_stopped = false;
 
 #define send hl_send_data
 static void send( void *ptr, int size ) {
@@ -109,10 +113,10 @@ static void hl_debug_loop( hl_module *m ) {
 		// for some reason, this is not working on windows (recv returns 0 ?)
 		hl_socket_recv(s,&cmd,0,1);
 		hl_socket_close(s);
-		debugger_connected = true;
+		hl_atomic_store32(&debugger_connected, true);
 		client_socket = NULL;
 	} while( loop );
-	debugger_stopped = true;
+	hl_atomic_store32(&debugger_stopped, true);
 }
 
 h_bool hl_module_debug( hl_module *m, int port, h_bool wait ) {
@@ -133,7 +137,7 @@ h_bool hl_module_debug( hl_module *m, int port, h_bool wait ) {
 		return false;
 	}
 	if( wait ) {
-		while( !debugger_connected )
+		while( !hl_atomic_load32(&debugger_connected) )
 			hl_sys_sleep(0.01);
 	}
 #	else
@@ -145,11 +149,16 @@ h_bool hl_module_debug( hl_module *m, int port, h_bool wait ) {
 	return true;
 }
 
+h_bool hl_module_debugger_connected() {
+	// bool set/consumed out of mutex would probably deserve a memory barrier
+	return hl_atomic_load32(&debugger_connected) != 0;
+}
+
 void hl_module_debug_stop() {
 	if( !debug_socket ) return;
 #	ifdef HL_THREADS
 	hl_socket_close(debug_socket);
-	while( !debugger_stopped )
+	while( !hl_atomic_load32(&debugger_stopped) )
 		hl_sys_sleep(0.01);
 	hl_remove_root(&debug_socket);
 	hl_remove_root(&client_socket);

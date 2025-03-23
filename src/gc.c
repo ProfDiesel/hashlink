@@ -20,9 +20,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "hl.h"
-#ifdef HL_WIN
+#if defined(HL_WIN)
 #	include <windows.h>
-#else
+#elif !defined(HL_CONSOLE)
 #	include <sys/types.h>
 #	include <sys/mman.h>
 #endif

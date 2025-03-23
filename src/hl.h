@@ -85,7 +85,12 @@
 #	define HL_XBS
 #endif
 
-#if defined(HL_PS) || defined(HL_NX) || defined(HL_XBO) || defined(HL_XBS) || defined(HL_OS)
+#ifdef TARGET_PLAYDATE
+#	define HL_PLAYDATE
+#   define HL_NO_THREADS
+#endif
+
+#if defined(HL_PS) || defined(HL_NX) || defined(HL_XBO) || defined(HL_XBS) || defined(HL_OS) || defined(HL_PLAYDATE)
 #	define HL_CONSOLE
 #endif
 
@@ -253,7 +258,7 @@ HL_API int uvszprintf( uchar *out, int out_size, const uchar *fmt, va_list argli
 #	define utostr(out,size,str) wcstombs(out,str,size)
 #else
 #	include <stdarg.h>
-#if defined(HL_IOS) || defined(HL_TVOS) || defined(HL_MAC)
+#if defined(HL_IOS) || defined(HL_TVOS) || defined(HL_MAC) || defined(HL_PLAYDATE)
 #include <stddef.h>
 #include <stdint.h>
 #if !defined(__cplusplus) || __cplusplus < 201103L
@@ -332,7 +337,7 @@ C_FUNCTION_END
 #	define HL_NO_RETURN(f) __declspec(noreturn) f
 #	define HL_UNREACHABLE
 #else
-#	define HL_NO_RETURN(f) f __attribute__((noreturn))
+#	define HL_NO_RETURN(f) f __attribute__((noreturn, cold))
 #	define HL_UNREACHABLE __builtin_unreachable()
 #endif
 
