@@ -1315,7 +1315,7 @@ Returns:      TRUE  - a number was read
 
 static BOOL
 read_number(PCRE2_SPTR *ptrptr, PCRE2_SPTR ptrend, int32_t allow_sign,
-  uint32_t max_value, uint32_t max_error, int *intptr, int *errorcodeptr)
+  uint32_t max_value, uint32_t max_error, int32_t *intptr, int *errorcodeptr)
 {
 int sign = 0;
 uint32_t n = 0;
