@@ -20,10 +20,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "hl.h"
-#ifdef HL_WIN
+#if defined(HL_WIN)
 #	undef _GUID
 #	include <windows.h>
-#else
+#elif !defined(HL_CONSOLE)
 #	include <sys/types.h>
 #	include <sys/mman.h>
 #endif
@@ -274,7 +274,7 @@ HL_PRIM void hl_global_lock( bool lock ) {
 HL_PRIM void hl_add_root( void *r ) {
 	gc_global_lock(true);
 	if( gc_roots_count == gc_roots_max ) {
-		int nroots = gc_roots_max ? (gc_roots_max << 1) : 16;
+		int nroots = gc_roots_max ? (gc_roots_max << 1) : 512;
 		void ***roots = (void***)malloc(sizeof(void*)*nroots);
 		memcpy(roots,gc_roots,sizeof(void*)*gc_roots_count);
 		free(gc_roots);
@@ -970,9 +970,12 @@ HL_API int hl_gc_get_mark_threads( hl_thread **tids ) {
 
 static void hl_gc_init() {
 	int i;
+	for(i=0;i<1<<GC_LEVEL1_BITS;i++)
+		gc_level1_null[i] = NULL;
 	for(i=0;i<1<<GC_LEVEL0_BITS;i++)
 		hl_gc_page_map[i] = gc_level1_null;
 	gc_allocator_init();
+
 #	ifndef HL_CONSOLE
 	if( getenv("HL_GC_PROFILE") )
 		gc_flags |= GC_PROFILE;

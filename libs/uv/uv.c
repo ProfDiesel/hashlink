@@ -1,11 +1,17 @@
 #define HL_NAME(n) uv_##n
 #ifdef _WIN32
+#if !defined(HL_PLAYDATE)
 #	include <uv.h>
+#endif
 #	include <hl.h>
 #else
 #	include <hl.h>
+#if !defined(HL_PLAYDATE)
 #	include <uv.h>
 #endif
+#endif
+
+#if !defined(HL_PLAYDATE)
 
 #if (UV_VERSION_MAJOR <= 0)
 #	error "libuv1-dev required, uv version 0.x found"
@@ -350,3 +356,5 @@ DEFINE_PRIM(_I32, loop_alive_wrap, _LOOP);
 DEFINE_PRIM(_VOID, stop_wrap, _LOOP);
 
 DEFINE_PRIM(_BYTES, strerror, _I32);
+
+#endif

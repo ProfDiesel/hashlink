@@ -26,6 +26,7 @@
 #	include <sys/wait.h>
 #	include <sys/user.h>
 #	include <signal.h>
+#   include <errno.h>
 #	define USE_PTRACE
 #endif
 
@@ -71,7 +72,11 @@ HL_API bool hl_debug_start( int pid ) {
 #	elif defined(MAC_DEBUG)
 	return mdbg_session_attach(pid);
 #	elif defined(USE_PTRACE)
-	return ptrace(PTRACE_ATTACH,pid,0,0) >= 0;
+	if (ptrace(PTRACE_ATTACH,pid,0,0) < 0) {
+		printf("ptrace(PTRACE_ATTACH,%d,0,0) => %d",pid,errno);
+		return false;
+	}
+	return true;
 #	else
 	return false;
 #	endif
@@ -250,13 +255,13 @@ HL_API int hl_debug_wait( int pid, int *thread, int timeout ) {
 #	elif defined(USE_PTRACE)
 	int status;
 	int ret = waitpid(pid,&status,0);
-	//printf("WAITPID=%X %X\n",ret,status);
+	printf("WAITPID=%X %X %d %d\n",ret,status,pid,errno);
 	*thread = ret;
 	if( WIFEXITED(status) )
 		return 0;
 	if( WIFSTOPPED(status) ) {
 		int sig = WSTOPSIG(status);
-		//printf(" STOPSIG=%d\n",sig);
+		printf(" STOPSIG=%d\n",sig);
 		if( sig == SIGSTOP || sig == SIGTRAP )
 			return 1;
 		return 3;
@@ -348,7 +353,7 @@ HL_API void *hl_debug_read_register( int pid, int thread, int reg, bool is64 ) {
 	void *r = get_reg(reg);
 	if( ((int_val)r) < 0 ) {
 		// peek FP ptr
-		char *addr = (char*)ptrace(PTRACE_PEEKUSER,thread,get_reg(-1),0);
+		vbyte *addr = (vbyte*)ptrace(PTRACE_PEEKUSER,thread,get_reg(-1),0);
 		void *out = NULL;
 		hl_debug_read(pid, addr + (-((int_val)r)-1), (vbyte*)&out, sizeof(void*));
 		return out;

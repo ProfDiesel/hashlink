@@ -223,6 +223,9 @@ HL_PRIM int64 hl_sys_timestamp_ms() {
 	QueryPerformanceCounter(&time);
 
 	return time.QuadPart * 1000LL / qpcFrequency.QuadPart;
+#elif defined(HL_PLAYDATE)
+	hl_error("hl_sys_timestamp_ms not available on this platform");
+	return 0;
 #else
 	struct timespec ts;
 	if (clock_gettime(CLOCK_MONOTONIC, &ts)) {
@@ -308,6 +311,8 @@ HL_PRIM void hl_sys_sleep( double f ) {
 	#if !defined(HL_CONSOLE)
 	timeEndPeriod(1);
 	#endif
+#elif defined(HL_PLAYDATE)
+	hl_error("hl_sys_sleep not available on this platform");
 #else
 	struct timespec t;
 	t.tv_sec = (int)f;
@@ -337,6 +342,10 @@ HL_PRIM bool hl_sys_set_time_locale( vbyte *l ) {
 
 
 HL_PRIM vbyte *hl_sys_get_cwd() {
+#if defined(HL_PLAYDATE)
+	hl_error("hl_sys_get_cwd not available on this platform");
+	return NULL;
+#else
 	pchar buf[256];
 	int l;
 	if( getcwd(buf,256) == NULL )
@@ -347,10 +356,16 @@ HL_PRIM vbyte *hl_sys_get_cwd() {
 		buf[l+1] = 0;
 	}
 	return (vbyte*)pstrdup(buf,-1);
+#endif
 }
 
 HL_PRIM bool hl_sys_set_cwd( vbyte *dir ) {
+#if defined(HL_PLAYDATE)
+	hl_error("hl_sys_set_cwd not available on this platform");
+	return false;
+#else
 	return chdir((pchar*)dir) == 0;
+#endif
 }
 
 HL_PRIM bool hl_sys_is64() {
@@ -368,12 +383,15 @@ HL_PRIM int hl_sys_command( vbyte *cmd ) {
 	ret = system((pchar*)cmd);
 	hl_blocking(false);
 	return ret;
+#elif defined(HL_PLAYDATE)
+	hl_error("hl_sys_command not available on this platform");
+	return -1;
 #else
 	int status;
 	hl_blocking(true);
 #if defined(HL_IOS) || defined(HL_TVOS)
 	status = 0;
-	hl_error("hl_sys_command() not available on this platform");
+	hl_error("hl_sys_command not available on this platform");
 #else
 	status = system((pchar*)cmd);
 #endif
@@ -425,11 +443,21 @@ HL_PRIM bool hl_sys_is_dir( vbyte *path ) {
 }
 
 HL_PRIM bool hl_sys_create_dir( vbyte *path, int mode ) {
+#if defined(HL_PLAYDATE)
+	hl_error("hl_sys_create_dir not available on this platform");
+	return false;
+#else
 	return mkdir((pchar*)path,mode) == 0;
+#endif
 }
 
 HL_PRIM bool hl_sys_remove_dir( vbyte *path ) {
+#if defined(HL_PLAYDATE)
+	hl_error("hl_sys_remove_dir not available on this platform");
+	return false;
+#else
 	return rmdir((pchar*)path) == 0;
+#endif
 }
 
 HL_PRIM int hl_sys_getpid() {
@@ -448,6 +476,9 @@ HL_PRIM double hl_sys_cpu_time() {
 	if( !GetProcessTimes(GetCurrentProcess(),&unused,&unused,&stime,&utime) )
 		return 0.;
 	return ((double)(utime.dwHighDateTime+stime.dwHighDateTime)) * 65.536 * 6.5536 + (((double)utime.dwLowDateTime + (double)stime.dwLowDateTime) / 10000000);
+#elif defined(HL_PLAYDATE)
+	(__func__);
+	return 0.;
 #else
 	struct tms t = {0};
 	times(&t);
@@ -463,8 +494,11 @@ HL_PRIM double hl_sys_thread_cpu_time() {
 		return 0.;
 	return ((double)utime.dwHighDateTime) * 65.536 * 6.5536 + (((double)utime.dwLowDateTime) / 10000000);
 #elif defined(HL_MAC) || defined(HL_CONSOLE)
-	hl_error("sys_thread_cpu_time not implemented on this platform");
+	hl_error("hl_sys_thread_cpu_time not available on this platform");
 	return 0.;
+#elif defined(HL_PLAYDATE)
+	hl_error("hl_sys_thread_cpu_time not available on this platform");
+	return 0;
 #else
 	struct timespec t;
 	if( clock_gettime(CLOCK_THREAD_CPUTIME_ID,&t) )
@@ -512,6 +546,8 @@ HL_PRIM varray *hl_sys_read_dir( vbyte *_path ) {
 			break;
 	}
 	FindClose(handle);
+#elif defined(HL_PLAYDATE)
+	hl_error("hl_sys_read_dir not available on this platform");
 #else
 	DIR *d;
 	struct dirent *e;
@@ -591,6 +627,9 @@ HL_PRIM vbyte *hl_sys_full_path( vbyte *path ) {
 		last = i;
 	}
 	return (vbyte*)pstrdup(out,len);
+#elif defined(HL_PLAYDATE)
+	hl_error("hl_sys_full_path not available on this platform");
+	return NULL;
 #else
 	pchar buf[PATH_MAX];
 	if( realpath((pchar*)path,buf) == NULL )

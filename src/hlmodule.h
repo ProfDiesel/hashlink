@@ -161,6 +161,7 @@ h_bool hl_module_patch( hl_module *m, hl_code *code );
 void hl_module_free( hl_module *m );
 h_bool hl_module_debug( hl_module *m, int port, h_bool wait );
 hl_type *hl_module_resolve_type( hl_module *m, hl_type *t, bool err );
+h_bool hl_module_debugger_connected();
 
 void hl_profile_setup( int sample_count );
 void hl_profile_end();

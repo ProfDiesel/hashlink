@@ -1315,7 +1315,7 @@ Returns:      TRUE  - a number was read
 
 static BOOL
 read_number(PCRE2_SPTR *ptrptr, PCRE2_SPTR ptrend, int32_t allow_sign,
-  uint32_t max_value, uint32_t max_error, int *intptr, int *errorcodeptr)
+  uint32_t max_value, uint32_t max_error, int32_t *intptr, int *errorcodeptr)
 {
 int sign = 0;
 uint32_t n = 0;
@@ -1597,7 +1597,7 @@ forcing). */
 
 else
   {
-  int s;
+  int32_t s;
   PCRE2_SPTR oldptr;
   BOOL overflow;
   BOOL alt_bsux =
@@ -2615,7 +2615,7 @@ int after_manual_callout = 0;
 int expect_cond_assert = 0;
 int errorcode = 0;
 int escape;
-int i;
+int32_t i;
 BOOL inescq = FALSE;
 BOOL inverbname = FALSE;
 BOOL utf = (options & PCRE2_UTF) != 0;
@@ -4413,7 +4413,7 @@ while (ptr < ptrend)
                ptr[7] != CHAR_RIGHT_PARENTHESIS)
         {
         uint32_t ge = 0;
-        int major = 0;
+        int32_t major = 0;
         int minor = 0;
 
         ptr += 7;

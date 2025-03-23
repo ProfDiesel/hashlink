@@ -1,7 +1,8 @@
+CC = ccache gcc
 
 LBITS := $(shell getconf LONG_BIT)
 MARCH ?= $(LBITS)
-PREFIX ?= /usr/local
+PREFIX ?= $(HOME)/local/hashlink
 INSTALL_DIR ?= $(PREFIX)
 INSTALL_BIN_DIR ?= $(PREFIX)/bin
 INSTALL_LIB_DIR ?= $(PREFIX)/lib
@@ -10,7 +11,7 @@ INSTALL_INCLUDE_DIR ?= $(PREFIX)/include
 LIBS = $(addsuffix .hdll,fmt sdl ssl openal ui uv mysql sqlite heaps)
 ARCH ?= $(shell uname -m)
 
-CFLAGS = -Wall -O3 -std=c11 -fvisibility=hidden
+CFLAGS = -Wall -Og -ggdb3 -std=c11 -fvisibility=hidden
 CPPFLAGS = -I src
 LIBHL_LDFLAGS =
 LIBHL_LDLIBS = -lm -lpthread
